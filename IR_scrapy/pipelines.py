@@ -1,25 +1,35 @@
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
-
-# useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
-from scrapy.exporters import CsvItemExporter, XmlItemExporter, JsonItemExporter
-
+import os
+import csv
 
 class CsvPipeline:
-    def __init__(self, site_name):
-        self.site_name = site_name
-        self.file = open("assets/musics.csv", 'wb')
-        self.exporter = CsvItemExporter(self.file, encoding='utf-8')
-        self.exporter.start_exporting()
+    def __init__(self):
+        self.files = None
+
+    def open_spider(self, spider):
+        self.files = {}
 
     def close_spider(self, spider):
-        self.exporter.finish_exporting()
-        self.file.close()
+        for site_name, (file, writer) in self.files.items():
+            file.close()
+            current_path = f"{site_name}.csv"
+            new_path = os.path.join('output', f"{site_name}.csv")
+            os.rename(current_path, new_path)
 
     def process_item(self, item, spider):
-        self.exporter.export_item(item)
+        site_name = item['site']
+
+        if site_name not in self.files:
+            self.create_csv_file(site_name)
+
+        file, writer = self.files[site_name]
+        writer.writerow([item['rank'], item['title'], item['artist']])
+
         return item
+
+    def create_csv_file(self, site_name):
+        filename = f"{site_name}.csv"
+        file = open(filename, 'w', newline='', encoding='utf-8')
+        writer = csv.writer(file)
+        writer.writerow(['Rank', 'Title', 'Artist'])  # Header
+
+        self.files[site_name] = (file, writer)
