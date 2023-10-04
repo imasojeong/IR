@@ -1,7 +1,7 @@
 import scrapy
+import time
 class MusicSpider(scrapy.Spider):
     name = "music"
-
     def start_requests(self):
         urls = [
             "https://www.melon.com/chart/",
@@ -10,9 +10,16 @@ class MusicSpider(scrapy.Spider):
             "https://www.melon.com/chart/week/",
             "https://www.melon.com/chart/month/",
         ]
+        num_documents = 0
+        start_time = time.time()
         # 페이지 순회
         for url in urls:
+            num_documents += 1
             yield scrapy.Request(url=url, callback=self.parse, meta={'site': url})
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"수집된 문서 수 : {num_documents}")
+        print(f"수집하는 데 걸린 시간 : {elapsed_time} seconds")
 
     def parse(self, response, **kwargs):
         site_name = response.meta.get('site', '').split('/')[-2]
@@ -39,3 +46,4 @@ class MusicSpider(scrapy.Spider):
                 'artist': music_sel.css('div.ellipsis.rank02 > span > a::text').get()
             }
             yield item
+

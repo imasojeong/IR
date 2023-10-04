@@ -12,6 +12,8 @@ BOT_NAME = "IR_scrapy"
 SPIDER_MODULES = ["IR_scrapy.spiders"]
 NEWSPIDER_MODULE = "IR_scrapy.spiders"
 
+# 출력 레벨 조정
+LOG_LEVEL = 'ERROR'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "IR_scrapy (+http://www.yourdomain.com)"
